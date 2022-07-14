@@ -16,7 +16,7 @@ export interface Payload {
   /**
    * Customer ID in your system of record.
    */
-  externalCustomerId?: string
+  externalCustomerId: string
   /**
    * Customer's full address
    */

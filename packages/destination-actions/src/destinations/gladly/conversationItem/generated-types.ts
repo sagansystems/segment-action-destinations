@@ -12,7 +12,7 @@ export interface Payload {
   /**
    * Customer ID in your system of record.
    */
-  externalCustomerId?: string
+  externalCustomerId: string
   /**
    * First line of highlighted text for the item in the customer timeline,
    */

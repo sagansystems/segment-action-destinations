@@ -2,15 +2,15 @@
 
 export interface Settings {
   /**
-   * Your Gladly admin email address
+   * Your Gladly Admin Email Address
    */
   username: string
   /**
-   * Your Gladly admin api key
+   * Your Gladly Admin API Key
    */
   password: string
   /**
-   * Your Gladly Url
+   * Your Gladly URL
    */
   url: string
 }
