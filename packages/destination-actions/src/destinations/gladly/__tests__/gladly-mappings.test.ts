@@ -1,12 +1,13 @@
 import { mappings } from '../gladly-mappings'
-import { GenericPayload } from '../gladly-shared-types'
+import { Customer, GenericPayload } from '../gladly-shared-types'
 
-fdescribe('Gladly Mappings', () => {
+describe('Gladly Mappings', () => {
   describe('generateConversationItemJSON', () => {
     const email = 'test@gladly.com'
     const phone = '2345678901'
     const title = 'Test Event'
     const body = 'test event body'
+
     it('formats using email when both email and phone are passed', () => {
       const request: GenericPayload = {
         email,
@@ -29,6 +30,7 @@ fdescribe('Gladly Mappings', () => {
         }
       })
     })
+
     it('formats the message correctly with email', () => {
       const request: GenericPayload = {
         email,
@@ -50,6 +52,7 @@ fdescribe('Gladly Mappings', () => {
         }
       })
     })
+
     it('formats the message correctly with phone', () => {
       const request: GenericPayload = {
         phone,
@@ -72,7 +75,8 @@ fdescribe('Gladly Mappings', () => {
       })
     })
   })
-  fdescribe('generateCreateCustomerJSON', () => {
+
+  describe('generateCreateCustomerJSON', () => {
     const name = 'Joe Bob'
     const email = 'test@gladly.com'
     const phone = '2345678901'
@@ -111,6 +115,7 @@ fdescribe('Gladly Mappings', () => {
         customAttributes
       })
     })
+
     it('returns customer with formatted email and no phone', () => {
       const request: GenericPayload = {
         name,
@@ -134,6 +139,7 @@ fdescribe('Gladly Mappings', () => {
         customAttributes
       })
     })
+
     it('returns customer with formatted phone and no email', () => {
       const request: GenericPayload = {
         name,
@@ -157,6 +163,7 @@ fdescribe('Gladly Mappings', () => {
         customAttributes
       })
     })
+
     it('returns customer with just external customer id', () => {
       const request: GenericPayload = {
         externalCustomerId
@@ -174,14 +181,131 @@ fdescribe('Gladly Mappings', () => {
   })
 
   describe('generateUpdateCustomerJSON', () => {
-    // const name = 'Joe Bob'
-    // const email = 'test@gladly.com'
-    // const phone = '2345678901'
-    // const address = `100 Test St. New York City NY US 10001`
-    // const externalCustomerId = '123'
-    // const customAttributes = {
-    //   attribute: 'test'
-    // }
-    describe('email', () => {})
+    const name = 'Joe Bob'
+    const email = 'test@gladly.com'
+    const phone = '2345678901'
+    const address = `100 Test St. New York City NY US 10001`
+    const externalCustomerId = '123'
+    const customAttributes = {
+      attribute: 'test'
+    }
+
+    describe('when customer has data to update', () => {
+      const customer: Customer = {
+        id: '123',
+        name: 'Jane Smith',
+        emails: [{ original: 'janesmith@gladly.com' }],
+        phones: [{ original: '4567879012' }],
+        address: '333 Example Ave. Houston TX US 77002',
+        externalCustomerId: '456',
+        customAttributes: {
+          test: 'example'
+        },
+        createdAt: '07-10-22'
+      }
+
+      it('updates customer name', () => {
+        const request: GenericPayload = {
+          name
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.name).toBe(name)
+      })
+
+      it('updates customer email', () => {
+        const request: GenericPayload = {
+          email
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.emails).toStrictEqual([{ original: 'janesmith@gladly.com' }, { original: email }])
+      })
+
+      it('updates customer phone', () => {
+        const request: GenericPayload = {
+          phone
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.phones).toStrictEqual([{ original: '4567879012' }, { original: phone }])
+      })
+
+      it('updates customer address', () => {
+        const request: GenericPayload = {
+          address
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.address).toBe(address)
+      })
+
+      it('updates customer external customer id', () => {
+        const request: GenericPayload = {
+          externalCustomerId
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.externalCustomerId).toBe(externalCustomerId)
+      })
+
+      it('updates customer custom attributes', () => {
+        const request: GenericPayload = {
+          customAttributes
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.customAttributes).toStrictEqual({ test: 'example', attribute: 'test' })
+      })
+    })
+
+    describe('when customer does not have data to update', () => {
+      const customer: Customer = {
+        id: '123',
+        createdAt: '07-10-22'
+      }
+
+      it('updates customer name', () => {
+        const request: GenericPayload = {
+          name
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.name).toBe(name)
+      })
+
+      it('updates customer email', () => {
+        const request: GenericPayload = {
+          email
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.emails).toStrictEqual([{ original: email, primary: true }])
+      })
+
+      it('updates customer phone', () => {
+        const request: GenericPayload = {
+          phone
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.phones).toStrictEqual([{ original: phone, primary: true }])
+      })
+
+      it('updates customer address', () => {
+        const request: GenericPayload = {
+          address
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.address).toBe(address)
+      })
+
+      it('updates customer external customer id', () => {
+        const request: GenericPayload = {
+          externalCustomerId
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.externalCustomerId).toBe(externalCustomerId)
+      })
+
+      it('updates customer custom attributes', () => {
+        const request: GenericPayload = {
+          customAttributes
+        }
+        const response = mappings.updateCustomer(customer, request)
+        expect(response.customAttributes).toStrictEqual({ attribute: 'test' })
+      })
+    })
   })
 })

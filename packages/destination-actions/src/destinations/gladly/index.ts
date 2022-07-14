@@ -1,9 +1,23 @@
 import type { DestinationDefinition } from '@segment/actions-core'
 import type { Settings } from './generated-types'
-
+import { defaultValues } from '@segment/actions-core'
 import conversationItem from './conversationItem'
-
 import customer from './customer'
+
+const presets: DestinationDefinition['presets'] = [
+  {
+    name: 'Track Calls',
+    subscribe: 'type = "track"',
+    partnerAction: 'trackEvent',
+    mapping: defaultValues(conversationItem.fields)
+  },
+  {
+    name: 'Identify Calls',
+    subscribe: 'type = "identify"',
+    partnerAction: 'identifyUser',
+    mapping: defaultValues(customer.fields)
+  }
+]
 
 const destination: DestinationDefinition<Settings> = {
   name: 'Gladly',
@@ -15,19 +29,19 @@ const destination: DestinationDefinition<Settings> = {
     fields: {
       username: {
         label: 'Admin Email Address',
-        description: 'Your Gladly admin email address',
+        description: 'Your Gladly Admin Email Address',
         type: 'string',
         required: true
       },
       password: {
         label: 'Admin API Key',
-        description: 'Your Gladly admin api key',
+        description: 'Your Gladly Admin API Key',
         type: 'string',
         required: true
       },
       url: {
-        label: 'Gladly Url',
-        description: 'Your Gladly Url',
+        label: 'Gladly URL',
+        description: 'Your Gladly URL',
         type: 'string',
         required: true
       }
@@ -41,6 +55,7 @@ const destination: DestinationDefinition<Settings> = {
     }
   },
 
+  presets,
   actions: {
     conversationItem,
     customer

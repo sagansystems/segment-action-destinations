@@ -9,26 +9,27 @@ describe('Gladly', () => {
   const settings: Settings = {
     username: 'user',
     password: 'password',
-    orgName: 'test-org',
-    isSandbox: false
+    url: 'https://test-org.us-1.gladly.com'
   }
   const request = createRequestClient()
 
   const subject = new Gladly(settings, request)
-  const baseUrl = `https://${settings.orgName}.us-1.gladly.com${API_VERSION}`
+  const baseUrl = `${settings.url}${API_VERSION}`
 
   describe('createConversationItem', () => {
     const customerId = '123'
 
     const email = 'test@gladly.com'
     const phone = '2345678901'
+    const externalCustomerId = '123'
     const title = 'Test Event'
     const body = 'test body for event'
 
-    it('returns a successful response with email and phone', async () => {
+    it('returns a successful response with email, phone and external customer id', async () => {
       const payload: GenericPayload = {
         email,
         phone,
+        externalCustomerId,
         title,
         body
       }
@@ -42,39 +43,8 @@ describe('Gladly', () => {
       expect(response.status).toMatchInlineSnapshot(`200`)
       expect(response.data).toStrictEqual({})
     })
-    it('returns a successful response with only email', async () => {
-      const payload: GenericPayload = {
-        email,
-        title,
-        body
-      }
-      nock(baseUrl).post(`/customers/${customerId}/conversation-items`).reply(200, {})
 
-      const response = await subject.createConversationItem(customerId, payload)
-
-      expect(response.url).toMatchInlineSnapshot(
-        `"https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items"`
-      )
-      expect(response.status).toMatchInlineSnapshot(`200`)
-      expect(response.data).toStrictEqual({})
-    })
-    it('returns a successful response with only phone', async () => {
-      const payload: GenericPayload = {
-        phone,
-        title,
-        body
-      }
-      nock(baseUrl).post(`/customers/${customerId}/conversation-items`).reply(200, {})
-
-      const response = await subject.createConversationItem(customerId, payload)
-
-      expect(response.url).toMatchInlineSnapshot(
-        `"https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items"`
-      )
-      expect(response.status).toMatchInlineSnapshot(`200`)
-      expect(response.data).toStrictEqual({})
-    })
-    it('throws integration error when email and phone are not included', async () => {
+    it('throws integration error when email, phone and external customer id are not included', async () => {
       const payload: GenericPayload = {
         title,
         body
@@ -89,6 +59,7 @@ describe('Gladly', () => {
       expect(response).not.toBeDefined()
       expect(error).toBeInstanceOf(IntegrationError)
     })
+
     it('throws http error when status code is not 2xx', async () => {
       const payload: GenericPayload = {
         email,
@@ -107,6 +78,7 @@ describe('Gladly', () => {
       expect(error).toBeInstanceOf(HTTPError)
     })
   })
+
   describe('createCustomer', () => {
     const name = 'Joe Bob'
     const email = 'test@gladly.com'
@@ -117,7 +89,7 @@ describe('Gladly', () => {
       tier: 'vip'
     }
 
-    it('returns a successful response with email and phone', async () => {
+    it('returns a successful response with email, phone and external customer id', async () => {
       const payload: GenericPayload = {
         name,
         email,
@@ -135,45 +107,10 @@ describe('Gladly', () => {
       expect(response.data).toStrictEqual({})
     })
 
-    it('returns a successful response with only email', async () => {
-      const payload: GenericPayload = {
-        name,
-        email,
-        address,
-        externalCustomerId,
-        customAttributes
-      }
-      nock(baseUrl).post(`/customer-profiles`).reply(201, {})
-
-      const response = await subject.createCustomer(payload)
-
-      expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles"`)
-      expect(response.status).toMatchInlineSnapshot(`201`)
-      expect(response.data).toStrictEqual({})
-    })
-
-    it('returns a successful response with only phone', async () => {
-      const payload: GenericPayload = {
-        name,
-        phone,
-        address,
-        externalCustomerId,
-        customAttributes
-      }
-      nock(baseUrl).post(`/customer-profiles`).reply(201, {})
-
-      const response = await subject.createCustomer(payload)
-
-      expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles"`)
-      expect(response.status).toMatchInlineSnapshot(`201`)
-      expect(response.data).toStrictEqual({})
-    })
-
-    it('throws integration error when email and phone are not included', async () => {
+    it('throws integration error when email, phone and external customer id are not included', async () => {
       const payload: GenericPayload = {
         name,
         address,
-        externalCustomerId,
         customAttributes
       }
 
@@ -210,13 +147,17 @@ describe('Gladly', () => {
       expect(error).toBeInstanceOf(HTTPError)
     })
   })
+
   describe('findCustomer', () => {
     const email = 'test@gladly.com'
     const phone = '+12345678901'
-    it('returns a successful response with email and phone', async () => {
+    const externalCustomerId = '123'
+
+    it('returns a successful response with email, phone and external customer id', async () => {
       const payload: GenericPayload = {
         email,
-        phone
+        phone,
+        externalCustomerId
       }
       nock(baseUrl)
         .get(`/customer-profiles`)
@@ -228,6 +169,10 @@ describe('Gladly', () => {
         ])
 
       const response = await subject.findCustomer(payload)
+
+      if (!response) {
+        throw new Error('Test failed: unable to find customer')
+      }
 
       expect(response.url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?email=test%40gladly.com"`
@@ -250,6 +195,10 @@ describe('Gladly', () => {
         ])
 
       const response = await subject.findCustomer(payload)
+
+      if (!response) {
+        throw new Error('Test failed: unable to find customer')
+      }
 
       expect(response.url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?email=test%40gladly.com"`
@@ -273,8 +222,38 @@ describe('Gladly', () => {
 
       const response = await subject.findCustomer(payload)
 
+      if (!response) {
+        throw new Error('Test failed: unable to find customer')
+      }
+
       expect(response.url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?phoneNumber=%2B12345678901"`
+      )
+      expect(response.status).toMatchInlineSnapshot(`200`)
+      expect(response.data).toStrictEqual([{ id: '123' }])
+    })
+
+    it('returns a successful response with only external customer id', async () => {
+      const payload: GenericPayload = {
+        externalCustomerId
+      }
+      nock(baseUrl)
+        .get(`/customer-profiles`)
+        .query({ externalCustomerId })
+        .reply(200, [
+          {
+            id: '123'
+          }
+        ])
+
+      const response = await subject.findCustomer(payload)
+
+      if (!response) {
+        throw new Error('Test failed: unable to find customer')
+      }
+
+      expect(response.url).toMatchInlineSnapshot(
+        `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?externalCustomerId=123"`
       )
       expect(response.status).toMatchInlineSnapshot(`200`)
       expect(response.data).toStrictEqual([{ id: '123' }])
@@ -293,6 +272,7 @@ describe('Gladly', () => {
       expect(response).not.toBeDefined()
       expect(error).toBeInstanceOf(IntegrationError)
     })
+
     it('throws a http error when status is not 2xx', async () => {
       const payload: GenericPayload = {
         email
@@ -310,43 +290,23 @@ describe('Gladly', () => {
       expect(error).toBeInstanceOf(HTTPError)
     })
   })
+
   describe('updateCustomer', () => {
     const email = 'test1@gladly.com'
     const phone = '2345678902'
+    const externalCustomerId = '123'
     const customerId = '123'
 
     const customer: Customer = {
       id: customerId,
       createdAt: '07-11-2022'
     }
-    it('returns a successful response with email and phone', async () => {
+
+    it('returns a successful response with email, phone and external customer id', async () => {
       const payload: GenericPayload = {
         email,
-        phone
-      }
-      nock(baseUrl).patch(`/customer-profiles/${customerId}`).reply(204, {})
-
-      const response = await subject.updateCustomer(customer, payload)
-
-      expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles/123"`)
-      expect(response.status).toMatchInlineSnapshot(`204`)
-      expect(response.data).toStrictEqual({})
-    })
-    it('returns a successful response with only email', async () => {
-      const payload: GenericPayload = {
-        email
-      }
-      nock(baseUrl).patch(`/customer-profiles/${customerId}`).reply(204, {})
-
-      const response = await subject.updateCustomer(customer, payload)
-
-      expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles/123"`)
-      expect(response.status).toMatchInlineSnapshot(`204`)
-      expect(response.data).toStrictEqual({})
-    })
-    it('returns a successful response with only phone', async () => {
-      const payload: GenericPayload = {
-        phone
+        phone,
+        externalCustomerId
       }
       nock(baseUrl).patch(`/customer-profiles/${customerId}`).reply(204, {})
 
@@ -357,7 +317,7 @@ describe('Gladly', () => {
       expect(response.data).toStrictEqual({})
     })
 
-    it('throws an integration error when email and phone are not included', async () => {
+    it('throws an integration error when email, phone and external customer id are not included', async () => {
       const payload: GenericPayload = {}
 
       let response, error

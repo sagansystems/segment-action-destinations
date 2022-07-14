@@ -7,6 +7,7 @@ const testDestination = createTestIntegration(destination)
 const actionSlug = 'customer'
 const destinationSlug = 'Gladly'
 const seedName = `${destinationSlug}#${actionSlug}`
+const url = 'https://test-org.us-1.gladly.com'
 
 describe(`Testing snapshot for ${destinationSlug}'s ${actionSlug} destination action:`, () => {
   it('required fields', async () => {
@@ -14,12 +15,14 @@ describe(`Testing snapshot for ${destinationSlug}'s ${actionSlug} destination ac
     const [eventData, settingsData] = generateTestData(seedName, destination, action, true)
 
     nock(/.*/).persist().get(/.*/).reply(200)
-    nock(/.*/).persist().post(/.*/).reply(200)
-    nock(/.*/).persist().put(/.*/).reply(200)
+    nock(/.*/).persist().post(/.*/).reply(201)
+    nock(/.*/).persist().patch(/.*/).reply(204)
 
     const event = createTestEvent({
       properties: eventData
     })
+
+    settingsData.url = url
 
     const responses = await testDestination.testAction(actionSlug, {
       event: event,
@@ -47,12 +50,14 @@ describe(`Testing snapshot for ${destinationSlug}'s ${actionSlug} destination ac
     const [eventData, settingsData] = generateTestData(seedName, destination, action, false)
 
     nock(/.*/).persist().get(/.*/).reply(200)
-    nock(/.*/).persist().post(/.*/).reply(200)
-    nock(/.*/).persist().put(/.*/).reply(200)
+    nock(/.*/).persist().post(/.*/).reply(201)
+    nock(/.*/).persist().patch(/.*/).reply(204)
 
     const event = createTestEvent({
       properties: eventData
     })
+
+    settingsData.url = url
 
     const responses = await testDestination.testAction(actionSlug, {
       event: event,

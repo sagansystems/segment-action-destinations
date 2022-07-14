@@ -12,13 +12,7 @@ const action: ActionDefinition<Settings, Payload> = {
       label: 'Name',
       description: "Customer's name",
       type: 'string',
-      default: {
-        '@if': {
-          exists: { '@path': '$.traits.name' },
-          then: { '@path': '$.traits.name' },
-          else: { '@path': '$.properties.name' }
-        }
-      }
+      default: { '@path': '$.traits.name' }
     },
     email,
     phone,
@@ -27,13 +21,7 @@ const action: ActionDefinition<Settings, Payload> = {
       label: 'Address',
       description: "Customer's full address",
       type: 'string',
-      default: {
-        '@if': {
-          exists: { '@path': '$.traits.address' },
-          then: { '@path': '$.traits.address' },
-          else: { '@path': '$.properties.address' }
-        }
-      }
+      default: { '@path': '$.traits.address' }
     },
     customAttributes: {
       label: 'Custom Attributes',

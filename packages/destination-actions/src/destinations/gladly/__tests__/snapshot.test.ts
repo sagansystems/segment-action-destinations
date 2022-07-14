@@ -5,6 +5,7 @@ import nock from 'nock'
 
 const testDestination = createTestIntegration(destination)
 const destinationSlug = 'actions-gladly'
+const url = 'https://test-org.us-1.gladly.com'
 
 describe(`Testing snapshot for ${destinationSlug} destination:`, () => {
   for (const actionSlug in destination.actions) {
@@ -13,13 +14,21 @@ describe(`Testing snapshot for ${destinationSlug} destination:`, () => {
       const action = destination.actions[actionSlug]
       const [eventData, settingsData] = generateTestData(seedName, destination, action, true)
 
-      nock(/.*/).persist().get(/.*/).reply(200)
-      nock(/.*/).persist().post(/.*/).reply(200)
-      nock(/.*/).persist().put(/.*/).reply(200)
+      nock(/.*/)
+        .persist()
+        .get(/.*/)
+        .reply(200, [{ id: '123' }])
+      nock(/.*/)
+        .persist()
+        .post(/.*/)
+        .reply(200 || 201)
+      nock(/.*/).persist().patch(/.*/).reply(204)
 
       const event = createTestEvent({
         properties: eventData
       })
+
+      settingsData.url = url
 
       const responses = await testDestination.testAction(actionSlug, {
         event: event,
@@ -47,13 +56,21 @@ describe(`Testing snapshot for ${destinationSlug} destination:`, () => {
       const action = destination.actions[actionSlug]
       const [eventData, settingsData] = generateTestData(seedName, destination, action, false)
 
-      nock(/.*/).persist().get(/.*/).reply(200)
-      nock(/.*/).persist().post(/.*/).reply(200)
-      nock(/.*/).persist().put(/.*/).reply(200)
+      nock(/.*/)
+        .persist()
+        .get(/.*/)
+        .reply(200, [{ id: '123' }])
+      nock(/.*/)
+        .persist()
+        .post(/.*/)
+        .reply(200 || 201)
+      nock(/.*/).persist().patch(/.*/).reply(204)
 
       const event = createTestEvent({
         properties: eventData
       })
+
+      settingsData.url = url
 
       const responses = await testDestination.testAction(actionSlug, {
         event: event,

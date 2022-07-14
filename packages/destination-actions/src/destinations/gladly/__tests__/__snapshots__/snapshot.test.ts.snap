@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing snapshot for actions-gladly destination: conversationItem action - all fields 1`] = `""`;
+
+exports[`Testing snapshot for actions-gladly destination: conversationItem action - required fields 1`] = `""`;
+
+exports[`Testing snapshot for actions-gladly destination: conversationItem action - required fields 2`] = `
+Headers {
+  Symbol(map): Object {
+    "authoriz
+    ation": Array [
+      "Basic N3hUd2NxUSlLQHpnVGY6N3hUd2NxUSlLQHpnVGY=",
+    ],
+    "user-agent": Array [
+      "Segment (Actions)",
+    ],
+  },
+}
+`;
+
+exports[`Testing snapshot for actions-gladly destination: customer action - all fields 1`] = `""`;
+
+exports[`Testing snapshot for actions-gladly destination: customer action - required fields 1`] = `""`;
+
+exports[`Testing snapshot for actions-gladly destination: customer action - required fields 2`] = `
+Headers {
+  Symbol(map): Object {
+    "authorization": Array [
+      "Basic KmRdVDJHN3h2XmJedToqZF1UMkc3eHZeYl51",
+    ],
+    "user-agent": Array [
+      "Segment (Actions)",
+    ],
+  },
+}
+`;
