@@ -1,5 +1,5 @@
 import { mappings } from '../gladly-mappings'
-import { GenericPayload } from '../gladly-types'
+import { GenericPayload } from '../gladly-shared-types'
 
 fdescribe('Gladly Mappings', () => {
   describe('generateConversationItemJSON', () => {

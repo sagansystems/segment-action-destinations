@@ -5,7 +5,13 @@ export interface Payload {
    * Customer's name
    */
   name?: string
+  /**
+   * Email address for the customer
+   */
   email?: string
+  /**
+   * Mobile phone number for the customer
+   */
   phone?: string
   /**
    * Customer ID in your system of record.

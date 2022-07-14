@@ -10,11 +10,7 @@ export interface Settings {
    */
   password: string
   /**
-   * Your Gladly Org Name
+   * Your Gladly Url
    */
-  orgName: string
-  /**
-   * Are you testing with a Gladly UAT environment?
-   */
-  isSandbox: boolean
+  url: string
 }

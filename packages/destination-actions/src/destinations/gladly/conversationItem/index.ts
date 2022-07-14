@@ -2,7 +2,7 @@ import { ActionDefinition, IntegrationError } from '@segment/actions-core'
 import type { Settings } from '../generated-types'
 import type { Payload } from './generated-types'
 import { Gladly } from '../gladly-operations'
-import { email, phone, externalCustomerId } from '../gladly-properties'
+import { email, phone, externalCustomerId } from '../gladly-shared-properties'
 
 const action: ActionDefinition<Settings, Payload> = {
   title: 'Conversation Item',

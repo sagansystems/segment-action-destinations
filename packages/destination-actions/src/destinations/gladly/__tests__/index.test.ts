@@ -12,8 +12,7 @@ describe('Gladly', () => {
       const settings = {
         username: '<test username>',
         password: '<test password>',
-        orgName: 'test-org',
-        isSandbox: true
+        url: 'https://test-org.us-1.gladly.com'
       }
 
       await expect(testDestination.testAuthentication(settings)).resolves.not.toThrowError()

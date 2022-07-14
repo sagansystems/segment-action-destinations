@@ -17,7 +17,7 @@ export class Gladly {
   request: RequestClient
 
   constructor(settings: Settings, request: RequestClient) {
-    this.url = settings.orgName
+    this.url = settings.url
     this.request = request
   }
 

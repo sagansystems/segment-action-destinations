@@ -1,7 +1,7 @@
 import nock from 'nock'
 import { Gladly, API_VERSION } from '../gladly-operations'
 import { Settings } from '../generated-types'
-import { GenericPayload, Customer } from '../gladly-types'
+import { GenericPayload, Customer } from '../gladly-shared-types'
 import { HTTPError, IntegrationError } from '@segment/actions-core'
 import createRequestClient from '../../../../../core/src/create-request-client'
 
