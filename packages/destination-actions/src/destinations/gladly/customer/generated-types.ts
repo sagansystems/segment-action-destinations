@@ -14,10 +14,6 @@ export interface Payload {
    */
   phone?: string
   /**
-   * Customer ID in your system of record.
-   */
-  externalCustomerId: string
-  /**
    * Customer's full address
    */
   address?: string
@@ -27,4 +23,5 @@ export interface Payload {
   customAttributes?: {
     [k: string]: unknown
   }
+  override: boolean
 }

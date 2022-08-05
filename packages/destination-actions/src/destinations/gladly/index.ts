@@ -28,13 +28,13 @@ const destination: DestinationDefinition<Settings> = {
     scheme: 'basic',
     fields: {
       username: {
-        label: 'Admin Email Address',
+        label: "API User's Email Address",
         description: 'Your Gladly Admin Email Address',
         type: 'string',
         required: true
       },
       password: {
-        label: 'Admin API Key',
+        label: "API User's API Key",
         description: 'Your Gladly Admin API Key',
         type: 'string',
         required: true
@@ -43,6 +43,7 @@ const destination: DestinationDefinition<Settings> = {
         label: 'Gladly URL',
         description: 'Your Gladly URL',
         type: 'string',
+        format: 'uri',
         required: true
       }
     }

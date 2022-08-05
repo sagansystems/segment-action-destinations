@@ -10,10 +10,6 @@ export interface Payload {
    */
   phone?: string
   /**
-   * Customer ID in your system of record.
-   */
-  externalCustomerId: string
-  /**
    * First line of highlighted text for the item in the customer timeline,
    */
   title: string
@@ -21,4 +17,12 @@ export interface Payload {
    * Plain text or rich content of the activity that will appear as the main content.
    */
   body: string
+  /**
+   * Type of this activity. This will determine the icon displayed in the customer timeline.
+   */
+  activityType: string
+  /**
+   * Name of the source system generating this activity
+   */
+  sourceName: string
 }

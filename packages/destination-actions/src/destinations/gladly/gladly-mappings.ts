@@ -1,8 +1,10 @@
-import isEmpty from 'lodash/isEmpty'
+import assign from 'lodash/assign'
 import find from 'lodash/find'
-import type { GenericPayload, Customer, CustomAttributes, Email, Phone } from './gladly-shared-types'
+import type { Customer } from './gladly-shared-types'
+import type { Payload as CreateConversationItemPayload } from './conversationItem/generated-types'
+import type { Payload as CustomerPayload } from './customer/generated-types'
 
-const generateConversationItemJSON = (payload: GenericPayload) => {
+const generateConversationItemJSON = (payload: CreateConversationItemPayload) => {
   const customer = payload.email
     ? {
         emailAddress: payload.email
@@ -10,7 +12,6 @@ const generateConversationItemJSON = (payload: GenericPayload) => {
     : {
         mobilePhone: payload.phone
       }
-  const activityType = payload.email ? 'EMAIL' : 'SMS'
 
   return {
     customer,
@@ -18,92 +19,56 @@ const generateConversationItemJSON = (payload: GenericPayload) => {
       type: 'CUSTOMER_ACTIVITY',
       title: payload.title,
       body: payload.body,
-      activityType,
-      sourceName: 'Segment'
+      activityType: payload.activityType,
+      sourceName: payload.sourceName
     }
   }
 }
 
-const generateCreateCustomerJSON = (payload: GenericPayload) => {
-  const name = payload.name ? payload.name : ''
-  const emails = payload.email ? [{ original: payload.email, primary: true }] : []
-  const phones = payload.phone ? [{ original: payload.phone, primary: true }] : []
-  const address = payload.address ? payload.address : ''
-  const externalCustomerId = payload.externalCustomerId ? payload.externalCustomerId : ''
-  const customAttributes = payload.customAttributes ? payload.customAttributes : {}
+const generateCreateCustomerJSON = (payload: CustomerPayload) => {
+  const customerEmails = payload.email ? [{ original: payload.email, primary: false }] : []
+  const customerPhones = payload.phone ? [{ original: payload.phone, primary: false }] : []
 
   return {
-    name,
-    address,
-    emails,
-    phones,
-    externalCustomerId,
+    name: payload.name,
+    address: payload.address,
+    emails: customerEmails,
+    phones: customerPhones,
+    customAttributes: payload.customAttributes
+  }
+}
+
+const generateUpdateCustomerJSON = (existingCustomer: Customer, payload: CustomerPayload) => {
+  const overrideExistingValues = payload.override
+
+  const customerEmails = existingCustomer.emails || []
+  if (payload.email) {
+    const normalizedEmail = normalizeEmail(payload.email)
+    if (!find(customerEmails, { normalized: normalizedEmail }) && !find(customerEmails, { original: payload.email })) {
+      customerEmails.push({ original: payload.email, primary: false })
+    }
+  }
+
+  const customerPhones = existingCustomer.phones || []
+  if (payload.phone && !find(existingCustomer.phones, { original: payload.phone })) {
+    customerPhones.push({ original: payload.phone, primary: false })
+  }
+
+  const customAttributes = overrideExistingValues
+    ? assign(existingCustomer.customAttributes, payload.customAttributes)
+    : existingCustomer.customAttributes
+
+  return {
+    name: overrideExistingValues && payload.name ? payload.name : existingCustomer.name,
+    address: overrideExistingValues && payload.address ? payload.address : existingCustomer.address,
+    emails: customerEmails,
+    phones: customerPhones,
     customAttributes
   }
 }
 
-const generateUpdateCustomerJSON = (customer: Customer, payload: GenericPayload) => {
-  let name, address, externalCustomerId
-  let emails: Email[] = []
-  let phones: Phone[] = []
-  const customAttributes: CustomAttributes = {}
-
-  if (payload.name) {
-    name = payload.name
-  }
-
-  if (customer.emails) {
-    emails = customer.emails
-  }
-  if (payload.email && customer.emails && !find(customer.emails, { original: payload.email })) {
-    customer.emails.push({ original: payload.email })
-    emails = customer.emails
-  }
-  if (payload.email && isEmpty(customer.emails)) {
-    emails = [{ original: payload.email, primary: true }]
-  }
-
-  if (customer.phones) {
-    phones = customer.phones
-  }
-  if (payload.phone && customer.phones && !find(customer.phones, { original: payload.phone })) {
-    customer.phones.push({ original: payload.phone })
-    phones = customer.phones
-  }
-  if (payload.phone && isEmpty(customer.phones)) {
-    phones = [{ original: payload.phone, primary: true }]
-  }
-
-  if (payload.address) {
-    address = payload.address
-  }
-
-  if (payload.externalCustomerId) {
-    externalCustomerId = payload.externalCustomerId
-  }
-
-  if (!isEmpty(payload.customAttributes) && !isEmpty(customer.customAttributes)) {
-    for (const key in customer.customAttributes) {
-      customAttributes[key] = customer.customAttributes[key]
-    }
-    for (const key in payload.customAttributes) {
-      customAttributes[key] = payload.customAttributes[key]
-    }
-  }
-  if (!isEmpty(payload.customAttributes) && isEmpty(customer.customAttributes)) {
-    for (const key in payload.customAttributes) {
-      customAttributes[key] = payload.customAttributes[key]
-    }
-  }
-
-  return {
-    name: name && name,
-    address: address && address,
-    emails: emails && emails,
-    phones: phones && phones,
-    externalCustomerId: externalCustomerId && externalCustomerId,
-    customAttributes: customAttributes && customAttributes
-  }
+function normalizeEmail(email: string) {
+  return email.trim().trimRight().toLowerCase() || email
 }
 
 export const mappings = {

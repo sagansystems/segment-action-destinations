@@ -1,6 +1,3 @@
-import { Payload as CustomerPayload } from './customer/generated-types'
-import { Payload as ConversationItemPayload } from './conversationItem/generated-types'
-
 export type Email = {
   normalized?: string
   original: string
@@ -33,5 +30,3 @@ export type Customer = {
   createdAt: string
   updatedAt?: string
 }
-
-export type GenericPayload = Partial<CustomerPayload & ConversationItemPayload>

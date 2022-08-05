@@ -1,8 +1,8 @@
-import { ActionDefinition } from '@segment/actions-core'
+import { IntegrationError, ActionDefinition } from '@segment/actions-core'
 import type { Settings } from '../generated-types'
 import type { Payload } from './generated-types'
 import { Gladly } from '../gladly-operations'
-import { email, phone, externalCustomerId } from '../gladly-shared-properties'
+import { email, phone } from '../gladly-shared-properties'
 
 const action: ActionDefinition<Settings, Payload> = {
   title: 'Customer',
@@ -16,7 +16,6 @@ const action: ActionDefinition<Settings, Payload> = {
     },
     email,
     phone,
-    externalCustomerId,
     address: {
       label: 'Address',
       description: "Customer's full address",
@@ -28,14 +27,29 @@ const action: ActionDefinition<Settings, Payload> = {
       description:
         'Organization-specific attributes from Customer system of record. The shape of customAttributes is defined by the Customer Profile Definition.',
       type: 'object'
+    },
+    override: {
+      label: 'Override Existing Values?',
+      description: '',
+      type: 'boolean',
+      required: true
     }
   },
   perform: async (request, { settings, payload }) => {
     const gladly = new Gladly(settings, request)
 
-    const response = await gladly.findCustomer(payload)
-    if (response) {
-      const customer = response.data[0]
+    let findCustomerResponse
+
+    if (payload.email) {
+      findCustomerResponse = await gladly.findCustomerByEmail(payload.email)
+    } else if (payload.phone) {
+      findCustomerResponse = await gladly.findCustomerByPhone(payload.phone)
+    } else {
+      throw new IntegrationError('Unable to ')
+    }
+
+    if (findCustomerResponse.data.length) {
+      const customer = findCustomerResponse.data[0]
       return await gladly.updateCustomer(customer, payload)
     } else {
       return await gladly.createCustomer(payload)

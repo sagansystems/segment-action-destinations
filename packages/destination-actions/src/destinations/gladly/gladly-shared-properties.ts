@@ -19,11 +19,3 @@ export const phone: InputField = {
     }
   }
 }
-
-export const externalCustomerId: InputField = {
-  label: 'External Customer ID',
-  description: 'Customer ID in your system of record.',
-  type: 'string',
-  default: { '@path': '$.userId' },
-  required: true
-}
