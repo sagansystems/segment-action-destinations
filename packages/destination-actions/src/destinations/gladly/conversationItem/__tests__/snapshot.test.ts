@@ -8,6 +8,7 @@ const actionSlug = 'conversationItem'
 const destinationSlug = 'Gladly'
 const seedName = `${destinationSlug}#${actionSlug}`
 const url = 'https://test-org.us-1.gladly.com'
+const email = 'test@gladly.com'
 
 describe(`Testing snapshot for ${destinationSlug}'s ${actionSlug} destination action:`, () => {
   it('required fields', async () => {
@@ -21,11 +22,12 @@ describe(`Testing snapshot for ${destinationSlug}'s ${actionSlug} destination ac
     nock(/.*/).persist().post(/.*/).reply(200)
     nock(/.*/).persist().put(/.*/).reply(200)
 
+    eventData.email = email
+    settingsData.url = url
+
     const event = createTestEvent({
       properties: eventData
     })
-
-    settingsData.url = url
 
     const responses = await testDestination.testAction(actionSlug, {
       event: event,

@@ -24,7 +24,6 @@ export type Customer = {
   address?: string
   emails?: Email[]
   phones?: Phone[]
-  externalCustomerId?: string
   customAttributes?: CustomAttributes
   id: string
   createdAt: string

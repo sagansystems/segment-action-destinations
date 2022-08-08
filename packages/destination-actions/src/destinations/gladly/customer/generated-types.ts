@@ -2,6 +2,10 @@
 
 export interface Payload {
   /**
+   * If true, this will override the existing Gladly Customer Profile data only if data is passed from the source
+   */
+  override: boolean
+  /**
    * Customer's name
    */
   name?: string
@@ -10,7 +14,7 @@ export interface Payload {
    */
   email?: string
   /**
-   * Mobile phone number for the customer
+   * Mobile phone number for the customer. Please ensure the number is either entered as is or following the E.164 format
    */
   phone?: string
   /**
@@ -23,5 +27,4 @@ export interface Payload {
   customAttributes?: {
     [k: string]: unknown
   }
-  override: boolean
 }

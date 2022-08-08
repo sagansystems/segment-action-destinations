@@ -1,5 +1,15 @@
 import { mappings } from '../gladly-mappings'
-import { Customer, GenericPayload } from '../gladly-shared-types'
+import { CustomAttributes, Customer, Email, Phone } from '../gladly-shared-types'
+import type { Payload as ConversationItemPayload } from '../conversationItem/generated-types'
+import type { Payload as CustomerPayload } from '../customer/generated-types'
+
+type CustomerResponse = {
+  name?: string
+  address?: string
+  emails?: Email[]
+  phones?: Phone[]
+  customAttributes?: CustomAttributes
+}
 
 describe('Gladly Mappings', () => {
   describe('generateConversationItemJSON', () => {
@@ -7,14 +17,19 @@ describe('Gladly Mappings', () => {
     const phone = '2345678901'
     const title = 'Test Event'
     const body = 'test event body'
+    const activityType = 'EMAIL'
+    const sourceName = 'Test'
 
     it('formats using email when both email and phone are passed', () => {
-      const request: GenericPayload = {
+      const request: ConversationItemPayload = {
         email,
         phone,
         title,
-        body
+        body,
+        activityType,
+        sourceName
       }
+
       const response = mappings.conversationItem(request)
 
       expect(response).toStrictEqual({
@@ -26,17 +41,20 @@ describe('Gladly Mappings', () => {
           title,
           body,
           activityType: 'EMAIL',
-          sourceName: 'Segment'
+          sourceName: 'Test'
         }
       })
     })
 
-    it('formats the message correctly with email', () => {
-      const request: GenericPayload = {
+    it('formats the message with email', () => {
+      const request: ConversationItemPayload = {
         email,
         title,
-        body
+        body,
+        activityType,
+        sourceName
       }
+
       const response = mappings.conversationItem(request)
 
       expect(response).toStrictEqual({
@@ -48,17 +66,20 @@ describe('Gladly Mappings', () => {
           title,
           body,
           activityType: 'EMAIL',
-          sourceName: 'Segment'
+          sourceName: 'Test'
         }
       })
     })
 
-    it('formats the message correctly with phone', () => {
-      const request: GenericPayload = {
+    it('formats the message with phone', () => {
+      const request: ConversationItemPayload = {
         phone,
         title,
-        body
+        body,
+        activityType: 'SMS',
+        sourceName
       }
+
       const response = mappings.conversationItem(request)
 
       expect(response).toStrictEqual({
@@ -70,7 +91,7 @@ describe('Gladly Mappings', () => {
           title,
           body,
           activityType: 'SMS',
-          sourceName: 'Segment'
+          sourceName: 'Test'
         }
       })
     })
@@ -81,102 +102,52 @@ describe('Gladly Mappings', () => {
     const email = 'test@gladly.com'
     const phone = '2345678901'
     const address = `100 Test St. New York City NY US 10001`
-    const externalCustomerId = '123'
     const customAttributes = {
       attribute: 'test'
     }
+    const override = false
 
-    it('returns customer with all fields formatted', () => {
-      const request: GenericPayload = {
+    describe('when all fields are passed', () => {
+      const request: CustomerPayload = {
         name,
         email,
         phone,
         address,
-        externalCustomerId,
-        customAttributes
+        customAttributes,
+        override
       }
+
       const response = mappings.createCustomer(request)
-      expect(response).toStrictEqual({
-        name,
-        address,
-        emails: [
-          {
-            original: email,
-            primary: true
-          }
-        ],
-        phones: [
-          {
-            original: phone,
-            primary: true
-          }
-        ],
-        externalCustomerId,
-        customAttributes
+
+      it('returns customer name', () => {
+        expect(response.name).toBe(name)
+      })
+
+      it('returns customer email', () => {
+        expect(response.emails).toStrictEqual([{ original: 'test@gladly.com', primary: false }])
+      })
+
+      it('returns customer phone', () => {
+        expect(response.phones).toStrictEqual([{ original: '2345678901', primary: false }])
+      })
+
+      it('returns customer address', () => {
+        expect(response.address).toBe(address)
+      })
+
+      it('returns customer custom attributes', () => {
+        expect(response.customAttributes).toStrictEqual({ attribute: 'test' })
       })
     })
 
-    it('returns customer with formatted email and no phone', () => {
-      const request: GenericPayload = {
-        name,
-        email,
-        address,
-        externalCustomerId,
-        customAttributes
+    describe('when only override is passed', function () {
+      const request: CustomerPayload = {
+        override
       }
-      const response = mappings.createCustomer(request)
-      expect(response).toStrictEqual({
-        name,
-        address,
-        emails: [
-          {
-            original: email,
-            primary: true
-          }
-        ],
-        phones: [],
-        externalCustomerId,
-        customAttributes
-      })
-    })
 
-    it('returns customer with formatted phone and no email', () => {
-      const request: GenericPayload = {
-        name,
-        phone,
-        address,
-        externalCustomerId,
-        customAttributes
-      }
       const response = mappings.createCustomer(request)
-      expect(response).toStrictEqual({
-        name,
-        address,
-        emails: [],
-        phones: [
-          {
-            original: phone,
-            primary: true
-          }
-        ],
-        externalCustomerId,
-        customAttributes
-      })
-    })
 
-    it('returns customer with just external customer id', () => {
-      const request: GenericPayload = {
-        externalCustomerId
-      }
-      const response = mappings.createCustomer(request)
-      expect(response).toStrictEqual({
-        name: '',
-        address: '',
-        emails: [],
-        phones: [],
-        externalCustomerId,
-        customAttributes: {}
-      })
+      itDoesNotReturnCustomerAttributes(response)
     })
   })
 
@@ -185,127 +156,107 @@ describe('Gladly Mappings', () => {
     const email = 'test@gladly.com'
     const phone = '2345678901'
     const address = `100 Test St. New York City NY US 10001`
-    const externalCustomerId = '123'
     const customAttributes = {
       attribute: 'test'
     }
 
-    describe('when customer has data to update', () => {
-      const customer: Customer = {
-        id: '123',
-        name: 'Jane Smith',
-        emails: [{ original: 'janesmith@gladly.com' }],
-        phones: [{ original: '4567879012' }],
-        address: '333 Example Ave. Houston TX US 77002',
-        externalCustomerId: '456',
-        customAttributes: {
-          test: 'example'
-        },
-        createdAt: '07-10-22'
-      }
+    const customer: Customer = {
+      id: '123',
+      name: 'Jane Smith',
+      emails: [{ original: 'janesmith@gladly.com' }],
+      phones: [{ original: '4567879012' }],
+      address: '333 Example Ave. Houston TX US 77002',
+      customAttributes: {
+        test: 'example'
+      },
+      createdAt: '07-10-22'
+    }
 
-      it('updates customer name', () => {
-        const request: GenericPayload = {
-          name
-        }
-        const response = mappings.updateCustomer(customer, request)
+    describe('when override is true', () => {
+      const override = true
+
+      const request: CustomerPayload = {
+        name,
+        email,
+        phone,
+        address,
+        customAttributes,
+        override
+      }
+      const response = mappings.updateCustomer(customer, request)
+
+      it('returns customer name', () => {
         expect(response.name).toBe(name)
       })
 
-      it('updates customer email', () => {
-        const request: GenericPayload = {
-          email
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.emails).toStrictEqual([{ original: 'janesmith@gladly.com' }, { original: email }])
+      it('returns customer email', () => {
+        expect(response.emails).toStrictEqual([
+          { original: 'janesmith@gladly.com' },
+          { original: email, primary: false }
+        ])
       })
 
-      it('updates customer phone', () => {
-        const request: GenericPayload = {
-          phone
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.phones).toStrictEqual([{ original: '4567879012' }, { original: phone }])
+      it('returns customer phone', () => {
+        expect(response.phones).toStrictEqual([{ original: '4567879012' }, { original: phone, primary: false }])
       })
 
-      it('updates customer address', () => {
-        const request: GenericPayload = {
-          address
-        }
-        const response = mappings.updateCustomer(customer, request)
+      it('returns customer address', () => {
         expect(response.address).toBe(address)
       })
 
-      it('updates customer external customer id', () => {
-        const request: GenericPayload = {
-          externalCustomerId
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.externalCustomerId).toBe(externalCustomerId)
-      })
-
-      it('updates customer custom attributes', () => {
-        const request: GenericPayload = {
-          customAttributes
-        }
-        const response = mappings.updateCustomer(customer, request)
+      it('returns customer custom attributes', () => {
         expect(response.customAttributes).toStrictEqual({ test: 'example', attribute: 'test' })
       })
     })
 
-    describe('when customer does not have data to update', () => {
-      const customer: Customer = {
-        id: '123',
-        createdAt: '07-10-22'
+    describe('when overide is false', () => {
+      const override = false
+
+      const request: CustomerPayload = {
+        name,
+        email,
+        phone,
+        address,
+        customAttributes,
+        override
+      }
+      const response = mappings.updateCustomer(customer, request)
+
+      itDoesNotReturnCustomerAttributes(response)
+    })
+
+    describe('when only override is passed', function () {
+      const override = true
+
+      const request: CustomerPayload = {
+        override
       }
 
-      it('updates customer name', () => {
-        const request: GenericPayload = {
-          name
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.name).toBe(name)
-      })
+      const response = mappings.updateCustomer(customer, request)
 
-      it('updates customer email', () => {
-        const request: GenericPayload = {
-          email
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.emails).toStrictEqual([{ original: email, primary: true }])
-      })
-
-      it('updates customer phone', () => {
-        const request: GenericPayload = {
-          phone
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.phones).toStrictEqual([{ original: phone, primary: true }])
-      })
-
-      it('updates customer address', () => {
-        const request: GenericPayload = {
-          address
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.address).toBe(address)
-      })
-
-      it('updates customer external customer id', () => {
-        const request: GenericPayload = {
-          externalCustomerId
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.externalCustomerId).toBe(externalCustomerId)
-      })
-
-      it('updates customer custom attributes', () => {
-        const request: GenericPayload = {
-          customAttributes
-        }
-        const response = mappings.updateCustomer(customer, request)
-        expect(response.customAttributes).toStrictEqual({ attribute: 'test' })
-      })
+      itDoesNotReturnCustomerAttributes(response)
     })
   })
+
+  function itDoesNotReturnCustomerAttributes(response: CustomerResponse) {
+    it('does not return customer name', () => {
+      expect(response.name).not.toBeDefined()
+    })
+
+    it('does not return customer email', () => {
+      expect(response.emails).not.toBeDefined()
+    })
+
+    it('does not return customer phone', () => {
+      expect(response.phones).not.toBeDefined()
+    })
+
+    it('does not return customer address', () => {
+      expect(response.address).not.toBeDefined()
+    })
+
+    it('does not return customer custom attributes', () => {
+      expect(response.customAttributes).not.toBeDefined()
+    })
+  }
 })

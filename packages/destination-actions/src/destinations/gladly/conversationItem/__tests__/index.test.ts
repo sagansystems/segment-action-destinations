@@ -39,6 +39,7 @@ describe('ConversationItem', () => {
 
     it('call find customer correctly', async () => {
       const response = await whenInvoked()
+
       expect(response[0].url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?email=test%40example.com"`
       )
@@ -58,6 +59,7 @@ describe('ConversationItem', () => {
 
     it('calls create conversation correctly', async () => {
       const response = await whenInvoked()
+
       expect(response[1].url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items"`
       )
@@ -86,6 +88,7 @@ describe('ConversationItem', () => {
 
     it('throws an integration error', async () => {
       const response = await whenInvoked()
+
       expect(response).toBeInstanceOf(IntegrationError)
     })
   })
@@ -97,7 +100,7 @@ describe('ConversationItem', () => {
 
     it('throws a http error', async () => {
       const response = await whenInvoked()
-      console.log(response)
+
       expect(response).toBeInstanceOf(HTTPError)
     })
   })
@@ -117,6 +120,7 @@ describe('ConversationItem', () => {
 
     it('throws a http error', async () => {
       const response = await whenInvoked()
+
       expect(response).toBeInstanceOf(HTTPError)
     })
   })

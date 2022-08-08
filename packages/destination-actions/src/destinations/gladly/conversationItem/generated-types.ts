@@ -6,7 +6,7 @@ export interface Payload {
    */
   email?: string
   /**
-   * Mobile phone number for the customer
+   * Mobile phone number for the customer. Please ensure the number is either entered as is or following the E.164 format
    */
   phone?: string
   /**

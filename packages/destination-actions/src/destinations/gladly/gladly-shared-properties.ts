@@ -9,7 +9,8 @@ export const email: InputField = {
 
 export const phone: InputField = {
   label: 'Phone Number',
-  description: 'Mobile phone number for the customer',
+  description:
+    'Mobile phone number for the customer. Please ensure the number is either entered as is or following the E.164 format',
   type: 'string',
   default: {
     '@if': {

@@ -98,6 +98,7 @@ describe('Gladly.customer', () => {
 
       it('calls update customer correctly', async () => {
         const response = await whenInvoked(override)
+
         expect(response[1].url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.qa/api/v1/customer-profiles/123"`)
         expect(response[1].options.headers).toMatchInlineSnapshot(`
                   Headers {
@@ -129,6 +130,7 @@ describe('Gladly.customer', () => {
 
       it('calls update customer correctly', async () => {
         const response = await whenInvoked(override)
+
         expect(response[1].url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.qa/api/v1/customer-profiles/123"`)
         expect(response[1].options.headers).toMatchInlineSnapshot(`
                   Headers {
@@ -142,15 +144,14 @@ describe('Gladly.customer', () => {
                     },
                   }
               `)
-        expect(response[1].options.body).toMatchInlineSnapshot(
-          `"{\\"name\\":\\"Jane Doe\\",\\"address\\":\\"34 Gladly St. Houston TX 77002\\",\\"emails\\":[{\\"original\\":\\"joedoe@gladly.com\\",\\"primary\\":true},{\\"original\\":\\"joe.bob@gladly.com\\",\\"primary\\":false}],\\"phones\\":[{\\"original\\":\\"5678901234\\",\\"primary\\":true},{\\"original\\":\\"2345678901\\",\\"primary\\":false}],\\"customAttributes\\":{\\"tier\\":\\"regular\\"}}"`
-        )
+        expect(response[1].options.body).toMatchInlineSnapshot(`"{}"`)
       })
     })
   })
 
   describe('when find customer fails', () => {
     const override = false
+
     beforeEach(() => {
       nock(baseUrl).get(`/customer-profiles`).query({ email }).reply(400)
     })
@@ -184,6 +185,7 @@ describe('Gladly.customer', () => {
   function itCallsFindCustomerCorrectly(override: boolean) {
     it('calls find customer with the correct url', async () => {
       const response = await whenInvoked(override)
+
       expect(response[0].url).toMatchInlineSnapshot(
         `"https://test-org.us-1.gladly.qa/api/v1/customer-profiles?email=joe.bob%40gladly.com"`
       )

@@ -54,14 +54,14 @@ const action: ActionDefinition<Settings, Payload> = {
     } else if (payload.phone) {
       customer = await gladly.findCustomerByPhone(payload.phone)
     } else {
-      throw new IntegrationError('Unable to ')
+      throw new IntegrationError('Please pass either an email or phone number as part of the request', '400', 400)
     }
 
     if (customer.data.length) {
       const customerId = customer.data[0].id
       return await gladly.createConversationItem(customerId, payload)
     } else {
-      throw new IntegrationError('Unable to find customer')
+      throw new IntegrationError('Unable to find customer with the email or phone number provided', '400', 400)
     }
   }
 }

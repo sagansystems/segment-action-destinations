@@ -6,6 +6,7 @@ import nock from 'nock'
 const testDestination = createTestIntegration(destination)
 const destinationSlug = 'actions-gladly'
 const url = 'https://test-org.us-1.gladly.com'
+const email = 'test@gladly.com'
 
 describe(`Testing snapshot for ${destinationSlug} destination:`, () => {
   for (const actionSlug in destination.actions) {
@@ -24,11 +25,12 @@ describe(`Testing snapshot for ${destinationSlug} destination:`, () => {
         .reply(200 || 201)
       nock(/.*/).persist().patch(/.*/).reply(204)
 
+      settingsData.url = url
+      eventData.email = email
+
       const event = createTestEvent({
         properties: eventData
       })
-
-      settingsData.url = url
 
       const responses = await testDestination.testAction(actionSlug, {
         event: event,

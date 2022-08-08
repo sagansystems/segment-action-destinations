@@ -4,6 +4,8 @@ import { Gladly, API_VERSION } from '../gladly-operations'
 import { Settings } from '../generated-types'
 import { Customer } from '../gladly-shared-types'
 import { HTTPError } from '@segment/actions-core'
+import { Payload as ConversationItemPayload } from '../conversationItem/generated-types'
+import { Payload as CustomerPayload } from '../customer/generated-types'
 import createRequestClient from '../../../../../core/src/create-request-client'
 
 describe('Gladly', () => {
@@ -29,14 +31,16 @@ describe('Gladly', () => {
       const activityType = 'EMAIL'
 
       it('calls create conversation item endpoint successfully', async () => {
-        const result = await subject.createConversationItem(customerId, {
+        const request: ConversationItemPayload = {
           email,
           phone,
           title,
           body,
           activityType,
           sourceName
-        })
+        }
+        const result = await subject.createConversationItem(customerId, request)
+
         expect(subject.request).toHaveBeenCalledWith(
           'https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items',
           {
@@ -62,14 +66,15 @@ describe('Gladly', () => {
       const activityType = 'EMAIL'
 
       it('calls create conversation item endpoint successfully', async () => {
-        const result = await subject.createConversationItem(customerId, {
+        const request: ConversationItemPayload = {
           email,
-          phone: '',
           title,
           body,
           activityType,
           sourceName
-        })
+        }
+        const result = await subject.createConversationItem(customerId, request)
+
         expect(subject.request).toHaveBeenCalledWith(
           'https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items',
           {
@@ -95,14 +100,15 @@ describe('Gladly', () => {
       const activityType = 'SMS'
 
       it('calls create conversation item endpoint successfully', async () => {
-        const result = await subject.createConversationItem(customerId, {
-          email: '',
+        const request: ConversationItemPayload = {
           phone,
           title,
           body,
           activityType,
           sourceName
-        })
+        }
+        const result = await subject.createConversationItem(customerId, request)
+
         expect(subject.request).toHaveBeenCalledWith(
           'https://test-org.us-1.gladly.com/api/v1/customers/123/conversation-items',
           {
@@ -135,16 +141,17 @@ describe('Gladly', () => {
       })
 
       it('throws an http error', async () => {
+        const request: ConversationItemPayload = {
+          email,
+          phone,
+          title,
+          body,
+          activityType,
+          sourceName
+        }
         let response
         try {
-          response = await subject.createConversationItem(customerId, {
-            email,
-            phone,
-            title,
-            body,
-            activityType,
-            sourceName
-          })
+          response = await subject.createConversationItem(customerId, request)
         } catch (e) {
           response = e
         }
@@ -165,7 +172,9 @@ describe('Gladly', () => {
 
     describe('with all fields', () => {
       it('calls create customer endpoint successfully', async () => {
-        const response = await subject.createCustomer({ name, email, phone, address, customAttributes, override })
+        const request: CustomerPayload = { name, email, phone, address, customAttributes, override }
+        const response = await subject.createCustomer(request)
+
         expect(subject.request).toHaveBeenCalledWith('https://test-org.us-1.gladly.com/api/v1/customer-profiles', {
           json: {
             address,
@@ -182,21 +191,12 @@ describe('Gladly', () => {
 
     describe('with only email', () => {
       it('calls create customer endpoint successfully', async () => {
-        const response = await subject.createCustomer({
-          name: '',
-          email,
-          phone: '',
-          address: '',
-          customAttributes: {},
-          override
-        })
+        const request: CustomerPayload = { email, override }
+        const response = await subject.createCustomer(request)
+
         expect(subject.request).toHaveBeenCalledWith('https://test-org.us-1.gladly.com/api/v1/customer-profiles', {
           json: {
-            address: '',
-            customAttributes: {},
-            emails: [{ original: email, primary: false }],
-            name: '',
-            phones: []
+            emails: [{ original: email, primary: false }]
           },
           method: 'post'
         })
@@ -206,20 +206,11 @@ describe('Gladly', () => {
 
     describe('with only phone', () => {
       it('calls create customer endpoint successfully', async () => {
-        const response = await subject.createCustomer({
-          name: '',
-          email: '',
-          phone,
-          address: '',
-          customAttributes: {},
-          override
-        })
+        const request: CustomerPayload = { phone, override }
+        const response = await subject.createCustomer(request)
+
         expect(subject.request).toHaveBeenCalledWith('https://test-org.us-1.gladly.com/api/v1/customer-profiles', {
           json: {
-            address: '',
-            customAttributes: {},
-            emails: [],
-            name: '',
             phones: [{ original: phone, primary: false }]
           },
           method: 'post'
@@ -253,6 +244,7 @@ describe('Gladly', () => {
     describe('when the request is successful', () => {
       it('calls the find customer endpoint correctly', async () => {
         const response = await subject.findCustomerByEmail(email)
+
         expect(subject.request).toHaveBeenCalledWith(
           'https://test-org.us-1.gladly.com/api/v1/customer-profiles?email=test%40gladly.com',
           { method: 'get' }
@@ -285,6 +277,7 @@ describe('Gladly', () => {
     describe('when the request is successful', () => {
       it('calls the find customer endpoint correctly', async () => {
         const response = await subject.findCustomerByPhone(phone)
+
         expect(subject.request).toHaveBeenCalledWith(
           'https://test-org.us-1.gladly.com/api/v1/customer-profiles?phoneNumber=%2B12345678901',
           { method: 'get' }
@@ -312,11 +305,6 @@ describe('Gladly', () => {
   })
 
   describe('updateCustomer', () => {
-    const customer: Customer = {
-      id: '123',
-      createdAt: '07-11-2022'
-    }
-
     const name = 'Joe Bob'
     const email = 'test1@gladly.com'
     const phone = '2345678902'
@@ -327,17 +315,16 @@ describe('Gladly', () => {
 
     describe('when the request is successful', () => {
       describe('when override is true', () => {
+        const customer: Customer = {
+          id: '123',
+          createdAt: '07-11-2022'
+        }
         const override = true
 
         it('calls the update customer endpoint correctly', async () => {
-          const response = await subject.updateCustomer(customer, {
-            name,
-            email,
-            phone,
-            address,
-            customAttributes,
-            override
-          })
+          const request: CustomerPayload = { name, email, phone, address, customAttributes, override }
+          const response = await subject.updateCustomer(customer, request)
+
           expect(subject.request).toHaveBeenCalledWith(
             'https://test-org.us-1.gladly.com/api/v1/customer-profiles/123',
             {
@@ -354,10 +341,54 @@ describe('Gladly', () => {
           expect(response).not.toBeInstanceOf(Error)
         })
       })
+
+      describe('when override is false', () => {
+        const customer: Customer = {
+          id: '123',
+          name: 'Jane Doe',
+          address: '456 Happy. Ave Houston TX US 77001',
+          emails: [
+            {
+              original: 'janedoe@gladly.com',
+              primary: true
+            }
+          ],
+          phones: [
+            {
+              original: '6789012345',
+              primary: false
+            }
+          ],
+          customAttributes: {
+            tier: 'regular'
+          },
+          createdAt: '07-11-2022'
+        }
+        const override = false
+
+        it('calls the update customer endpoint correctly', async () => {
+          const request: CustomerPayload = { name, email, phone, address, customAttributes, override }
+          const response = await subject.updateCustomer(customer, request)
+
+          expect(subject.request).toHaveBeenCalledWith(
+            'https://test-org.us-1.gladly.com/api/v1/customer-profiles/123',
+            {
+              json: {},
+              method: 'patch'
+            }
+          )
+          expect(response).not.toBeInstanceOf(Error)
+        })
+      })
     })
 
     describe('when the request is unsuccessful', () => {
+      const customer: Customer = {
+        id: '123',
+        createdAt: '07-11-2022'
+      }
       const override = true
+
       beforeEach(() => {
         nock(baseUrl).patch(`/customer-profiles/${customer.id}`).reply(400, { error: 'error' })
       })
@@ -381,212 +412,4 @@ describe('Gladly', () => {
       })
     })
   })
-
-  // describe('createCustomer', () => {
-  //   const name = 'Joe Bob'
-  //   const email = 'test@gladly.com'
-  //   const phone = '2345678901'
-  //   const address = '123 Test St. New York City NY US 10001'
-  //   const customAttributes = {
-  //     tier: 'vip'
-  //   }
-
-  //   describe('with all fields', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).post(`/customer-profiles`).reply(201, {})
-  //     })
-
-  //     it('call create customer endpoint successfully', async () => {
-  //       const response = await whenInvoked(name, email, phone, address, customAttributes)
-  //       expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles"`)
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('with only email', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).post(`/customer-profiles`).reply(201, {})
-  //     })
-
-  //     it('call create customer endpoint successfully', async () => {
-  //       const response = await whenInvoked('', email, '', '', {})
-  //       expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles"`)
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('with only phone', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).post(`/customer-profiles`).reply(201, {})
-  //     })
-
-  //     it('call create customer endpoint successfully', async () => {
-  //       const response = await whenInvoked('', '', phone, '', {})
-  //       expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles"`)
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('when the request is unsuccessful', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).post(`/customer-profiles`).reply(400, { error: 'error' })
-  //     })
-
-  //     it('throws an http error', async () => {
-  //       const response = await whenInvoked(name, email, phone, address, customAttributes)
-  //       expect(response).toBeInstanceOf(HTTPError)
-  //     })
-  //   })
-
-  //   async function whenInvoked(name: string, email: string, phone: string, address: string, customAttributes: object) {
-  //     try {
-  //       return await subject.createCustomer(name, email, phone, address, customAttributes)
-  //     } catch (e) {
-  //       return e
-  //     }
-  //   }
-  // })
-
-  // describe('findCustomerByEmail', () => {
-  //   const email = 'test@gladly.com'
-
-  //   describe('when the request is successful', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl)
-  //         .get(`/customer-profiles`)
-  //         .query({ email })
-  //         .reply(200, [
-  //           {
-  //             id: '123'
-  //           }
-  //         ])
-  //     })
-
-  //     it('calls the find customer endpoint correctly', async () => {
-  //       const response = await whenInvoked()
-  //       expect(response.url).toMatchInlineSnapshot(
-  //         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?email=test%40gladly.com"`
-  //       )
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('when the request is unsuccessful', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).get(`/customer-profiles`).query({ email }).reply(400, { error: 'error' })
-  //     })
-
-  //     it('throws an http error', async () => {
-  //       const response = await whenInvoked()
-  //       expect(response).toBeInstanceOf(HTTPError)
-  //     })
-  //   })
-
-  //   async function whenInvoked() {
-  //     try {
-  //       return await subject.findCustomerByEmail(email)
-  //     } catch (e) {
-  //       return e
-  //     }
-  //   }
-  // })
-
-  // describe('findCustomerByPhone', () => {
-  //   const phone = '+12345678901'
-
-  //   describe('when the request is successful', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl)
-  //         .get(`/customer-profiles`)
-  //         .query({ phoneNumber: phone })
-  //         .reply(200, [
-  //           {
-  //             id: '123'
-  //           }
-  //         ])
-  //     })
-
-  //     it('calls the find customer endpoint correctly', async () => {
-  //       const response = await whenInvoked()
-  //       expect(response.url).toMatchInlineSnapshot(
-  //         `"https://test-org.us-1.gladly.com/api/v1/customer-profiles?phoneNumber=%2B12345678901"`
-  //       )
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('when the request is unsuccessful', () => {
-  //     beforeEach(() => {
-  //       nock(baseUrl).get(`/customer-profiles`).query({ phoneNumber: phone }).reply(400, { error: 'error' })
-  //     })
-
-  //     it('throws an http error', async () => {
-  //       const response = await whenInvoked()
-  //       expect(response).toBeInstanceOf(HTTPError)
-  //     })
-  //   })
-
-  //   async function whenInvoked() {
-  //     try {
-  //       return await subject.findCustomerByPhone(phone)
-  //     } catch (e) {
-  //       return e
-  //     }
-  //   }
-  // })
-
-  // describe('updateCustomer', () => {
-  //   const customer: Customer = {
-  //     id: '123',
-  //     createdAt: '07-11-2022'
-  //   }
-  //   const name = 'Joe Bob'
-  //   const address = '123 Test St. Houston, TX 77002'
-  //   const customAttributes = {
-  //     tier: 'vip'
-  //   }
-
-  //   describe('with all fields', () => {
-  //     const email = 'test1@gladly.com'
-  //     const phone = '2345678902'
-
-  //     beforeEach(() => {
-  //       nock(baseUrl).patch(`/customer-profiles/${customer.id}`).reply(204, {})
-  //     })
-
-  //     it('calls the update customer endpoint correctly', async () => {
-  //       const response = await whenInvoked(email, phone)
-  //       expect(response.url).toMatchInlineSnapshot(`"https://test-org.us-1.gladly.com/api/v1/customer-profiles/123"`)
-  //       expect(response.options.headers).toMatchInlineSnapshot()
-  //       expect(response.options.data).toMatchInlineSnapshot()
-  //     })
-  //   })
-
-  //   describe('when the request is unsuccessful', () => {
-  //     const email = 'test1@gladly.com'
-  //     const phone = '2345678902'
-
-  //     beforeEach(() => {
-  //       nock(baseUrl).patch(`/customer-profiles/${customer.id}`).reply(400, { error: 'error' })
-  //     })
-
-  //     it('throws an http error', async () => {
-  //       const response = await whenInvoked(email, phone)
-  //       expect(response).toBeInstanceOf(HTTPError)
-  //     })
-  //   })
-
-  //   async function whenInvoked(email: string, phone: string) {
-  //     try {
-  //       return await subject.updateCustomer(customer, name, email, phone, address, customAttributes)
-  //     } catch (e) {
-  //       return e
-  //     }
-  //   }
-  // })
 })

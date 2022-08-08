@@ -8,6 +8,13 @@ const action: ActionDefinition<Settings, Payload> = {
   title: 'Customer',
   description: '',
   fields: {
+    override: {
+      label: 'Override Existing Values?',
+      description:
+        'If true, this will override the existing Gladly Customer Profile data only if data is passed from the source',
+      type: 'boolean',
+      required: true
+    },
     name: {
       label: 'Name',
       description: "Customer's name",
@@ -27,12 +34,6 @@ const action: ActionDefinition<Settings, Payload> = {
       description:
         'Organization-specific attributes from Customer system of record. The shape of customAttributes is defined by the Customer Profile Definition.',
       type: 'object'
-    },
-    override: {
-      label: 'Override Existing Values?',
-      description: '',
-      type: 'boolean',
-      required: true
     }
   },
   perform: async (request, { settings, payload }) => {
@@ -45,7 +46,7 @@ const action: ActionDefinition<Settings, Payload> = {
     } else if (payload.phone) {
       findCustomerResponse = await gladly.findCustomerByPhone(payload.phone)
     } else {
-      throw new IntegrationError('Unable to ')
+      throw new IntegrationError('Please pass either an email or phone number as part of the request', '400', 400)
     }
 
     if (findCustomerResponse.data.length) {

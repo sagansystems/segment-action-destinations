@@ -7,8 +7,7 @@ exports[`Testing snapshot for actions-gladly destination: conversationItem actio
 exports[`Testing snapshot for actions-gladly destination: conversationItem action - required fields 2`] = `
 Headers {
   Symbol(map): Object {
-    "authoriz
-    ation": Array [
+    "authorization": Array [
       "Basic N3hUd2NxUSlLQHpnVGY6N3hUd2NxUSlLQHpnVGY=",
     ],
     "user-agent": Array [
